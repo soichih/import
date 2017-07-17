@@ -9,6 +9,7 @@
   "author": "Soichi Hayashi <hayashis@iu.edu> (http://soichi.us)",
   "license": "ISC",
   "dependencies": {
-    "async": "^2.4.1"
+    "async": "^2.4.1",
+    "mongodb": "^2.2.30"
   }
 }

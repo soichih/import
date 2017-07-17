@@ -2,16 +2,22 @@
 const fs = require('fs');
 const mongo = require('mongodb');
 const async = require('async');
+const os = require('os');
  
 var url = 'mongodb://localhost:27017/warehouse';
 mongo.MongoClient.connect(url, function(err, db) {
     console.log("Connected correctly to server");
 
-    //var project = mongo.ObjectId("592dcc5b0188fd1eecf7b4ec"); //hcp on soichi7;
-    var project = mongo.ObjectId("5941a225f876b000210c11e5");
-    var datatype_dwi = mongo.ObjectId("58c33c5fe13a50849b25879b"); //dwi on soichi7
-    var datatype_t1 = mongo.ObjectId("58c33bcee13a50849b25879a"); //t1 on soichi7
+    //datatype IDs are the same on brain-life.org and dev1
+    var datatype_dwi = mongo.ObjectId("58c33c5fe13a50849b25879b"); 
+    var datatype_t1 = mongo.ObjectId("58c33bcee13a50849b25879a");
     var datatype_freesurfer = mongo.ObjectId("58cb22c8e13a50849b25882e"); 
+
+    if(os.hostname() == "brain-life.org") {
+        var project = mongo.ObjectId("5941a225f876b000210c11e5"); //hcp project
+    } else {
+        var project = mongo.ObjectId("592dcc5b0188fd1eecf7b4ec"); //hcp project
+    }
 
     //reading directory
     var path = '/mnt/dcwan/projects/brainlife/hcp';
@@ -24,7 +30,7 @@ mongo.MongoClient.connect(url, function(err, db) {
         async.eachSeries(subjects, (subject, next_subject)=>{
 
             //decide which subject to load
-            if(subject[5] != "1") return next_subject(); //only load subjects that ends with specific number
+            //if(subject[5] != "0") return next_subject(); //only load subjects that ends with specific number
             //if(!~["107220"].indexOf(subject)) return next_subject(); //only load select subjects
 
             console.log("processing ",subject);
