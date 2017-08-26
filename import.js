@@ -8,7 +8,9 @@ mongo.MongoClient.connect(url, function(err, db) {
     console.log("Connected correctly to server");
 
     //var project = mongo.ObjectId("592dcc5b0188fd1eecf7b4ec"); //hcp on soichi7;
-    var project = mongo.ObjectId("5941a225f876b000210c11e5");
+    var project_3t = mongo.ObjectId("5941a225f876b000210c11e5");
+    var project_7t = mongo.ObjectId("59a09bbab47c0c0027ad7046");
+
     var datatype_dwi = mongo.ObjectId("58c33c5fe13a50849b25879b"); //dwi on soichi7
     var datatype_t1 = mongo.ObjectId("58c33bcee13a50849b25879a"); //t1 on soichi7
     var datatype_freesurfer = mongo.ObjectId("58cb22c8e13a50849b25882e"); 
@@ -24,13 +26,15 @@ mongo.MongoClient.connect(url, function(err, db) {
         async.eachSeries(subjects, (subject, next_subject)=>{
 
             //decide which subject to load
-            if(subject[5] != "1") return next_subject(); //only load subjects that ends with specific number
+            //if(subject[0] != "9") return next_subject(); //only load subjects that ends with specific number
+            //if(subject[5] != "0") return next_subject(); //only load subjects that ends with specific number
+            //if(subject[5] != "7") return next_subject(); //only load subjects that ends with specific number
             //if(!~["107220"].indexOf(subject)) return next_subject(); //only load select subjects
 
             console.log("processing ",subject);
 
             async.series([
-                //t1
+                //t1 (3T)
                 next=>{
                     fs.stat(path+"/"+subject+"/t1", (err, stats)=>{
                         console.error(err);
@@ -38,7 +42,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                         console.log("has t1");
                         datasets.push({
                             "user_id" : "1",
-                            "project" : project,
+                            "project" : project_3t,
                             "datatype" : datatype_t1,
                             "name" : "HCP t1 dataset",
                             "desc" : "/T1w/T1w_acpc_dc_restore_1.25.nii.gz",
@@ -46,7 +50,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subject": subject,
                             },
                             "tags" : [ 
-                                "hcp" 
+                                //"hcp", "3t", "1.25mm",
                             ],
                             "datatype_tags" : [ "acpc_aligned" ],
                             "storage" : "dcwan/hcp",
@@ -54,6 +58,39 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subdir": subject+"/t1",
                             },
                             "removed": false,
+                            "status": "stored",
+                            "create_date": stats.ctime,
+                        });
+
+                        next();
+                    });
+                },
+                
+                //t1 (7T)
+                next=>{
+                    fs.stat(path+"/"+subject+"/t17t", (err, stats)=>{
+                        console.error(err);
+                        if(err) return next(); //no t1 then skip
+                        console.log("has t1/7t");
+                        datasets.push({
+                            "user_id" : "1",
+                            "project" : project_7t,
+                            "datatype" : datatype_t1,
+                            "name" : "HCP t1 dataset (1.05mm)",
+                            "desc" : "/T1w/T1w_acpc_dc_restore_1.05.nii.gz",
+                            "meta": {
+                                "subject": subject,
+                            },
+                            "tags" : [ 
+                                // "1.05mm",
+                            ],
+                            "datatype_tags" : [ "acpc_aligned", "7t" ],
+                            "storage" : "dcwan/hcp",
+                            "storage_config" : {
+                                "subdir": subject+"/t17t",
+                            },
+                            "removed": false,
+                            "status": "stored",
                             "create_date": stats.ctime,
                         });
 
@@ -68,7 +105,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                         console.log("has dwi(3t)");
                         datasets.push({
                             "user_id" : "1",
-                            "project" : project,
+                            "project" : project_3t,
                             "datatype" : datatype_dwi,
                             "name" : "HCP dwi dataset",
                             "desc" : "/T1w/Diffusion/data.nii.gz (with bvecs/bvals)",
@@ -76,7 +113,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subject": subject,
                             },
                             "tags" : [ 
-                                "hcp" , "3t"
+                                //"hcp" , "3t"
                             ],
                             "datatype_tags" : [],
                             "storage" : "dcwan/hcp",
@@ -84,6 +121,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subdir": subject+"/dwi",
                             },
                             "removed": false,
+                            "status": "stored",
                             "create_date": stats.ctime,
                         });
                         next();
@@ -97,7 +135,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                         console.log("has 7t data!", path+"/"+subject+"/dwi7t");
                         datasets.push({
                             "user_id" : "1",
-                            "project" : project,
+                            "project" : project_7t,
                             "datatype" : datatype_dwi,
                             "name" : "HCP dwi(7t) dataset",
                             "desc" : "/T1w/Diffusion_7T/data.nii.gz (with bvecs/bvals)",
@@ -105,7 +143,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subject": subject,
                             },
                             "tags" : [ 
-                                "hcp" , "7t"
+                                //"hcp" , "7t"
                             ],
                             "datatype_tags" : ["7t"],
                             "storage" : "dcwan/hcp",
@@ -113,6 +151,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subdir": subject+"/dwi7t",
                             },
                             "removed": false,
+                            "status": "stored",
                             "create_date": stats.ctime,
                         });
                         console.dir(datasets);
@@ -127,7 +166,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                         console.log("has freesurfer");
                         datasets.push({
                             "user_id" : "1",
-                            "project" : project,
+                            "project" : project_3t, //TODO - I assume this is from 3t t1
                             "datatype" : datatype_freesurfer,
                             "name" : "HCP freesurfer output",
                             "desc" : "HCP freesurfer output from HCP Pipeline",
@@ -135,7 +174,7 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subject": subject,
                             },
                             "tags" : [ 
-                                "hcp" 
+                                //"hcp" 
                             ],
                             "datatype_tags" : [],
                             "storage" : "dcwan/hcp",
@@ -143,11 +182,13 @@ mongo.MongoClient.connect(url, function(err, db) {
                                 "subdir": subject+"/freesurfer",
                             },
                             "removed": false,
+                            "status": "stored",
                             "create_date": stats.ctime,
                         });
                         next();
                     });
                 },
+
             ], err=>{
                 if(err) console.error(err); 
                 next_subject();
@@ -158,9 +199,9 @@ mongo.MongoClient.connect(url, function(err, db) {
             console.log("dataset.length: ", datasets.length);
             var col = db.collection('datasets');
 
-            //first load all datasets in hcp project    
+            //first load all datasets in hcp projects
             var new_datasets = [];
-            col.find({project: project}).toArray(function(err, exists) {
+            col.find({project: {$in: [project_3t, project_7t]}}).toArray(function(err, exists) {
                 if(err) throw err;
                 //now, find new datasets
                 console.log("existing", exists.length);
@@ -176,6 +217,10 @@ mongo.MongoClient.connect(url, function(err, db) {
                     if(!found) new_datasets.push(dataset);
                 });
                 console.log("found ",new_datasets.length,"new dataset");
+                if(new_datasets.length == 0) {
+                    db.close();
+                    return;
+                }
                 col.insertMany(new_datasets,function(err, result) {
                     if(err) throw err;
                     console.dir(result);
