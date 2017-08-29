@@ -10,6 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.4.1",
-    "mongodb": "^2.2.30"
+    "mkdirp": "^0.5.1",
+    "mongodb": "^2.2.30",
+    "xml-parser": "^1.2.1"
   }
 }
