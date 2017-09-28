@@ -12,7 +12,7 @@ var datatype_dwi = mongo.ObjectId("58c33c5fe13a50849b25879b");
 //var datatype_freesurfer = mongo.ObjectId("58cb22c8e13a50849b25882e"); 
 
 if(os.hostname() == "brain-life.org") {
-    var project = mongo.ObjectId(""); //production
+    var project = mongo.ObjectId("59a57af4b5e93a0023001416"); //production
 } else {
     var project = mongo.ObjectId("59a4d5a39823b1266ba14e13"); //dev
 }
