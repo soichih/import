@@ -40,8 +40,8 @@ mongo.MongoClient.connect(url, function(err, db) {
                 break;
             case "58c33c5fe13a50849b25879b": //dwi
                 files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.nii.gz", local: "dwi.nii.gz"});
-                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bval", local: "dwi.bval"});
-                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bvec", local: "dwi.bvec"});
+                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bval", local: "dwi.bvals"});
+                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bvec", local: "dwi.bvecs"});
                 break;
             default:
                 console.error("wrong datatype", dataset.datatype);
