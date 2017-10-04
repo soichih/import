@@ -12,9 +12,10 @@ mongo.MongoClient.connect(url, function(err, db) {
 
     //find datasets that we need to clean up
     var col = db.collection('datasets');
-    let project = new mongo.ObjectId("59a4d5a39823b1266ba14e13"); //nki-dev
+    //let project = new mongo.ObjectId("59a4d5a39823b1266ba14e13"); //nki-dev
+    let project = new mongo.ObjectId("59a57af4b5e93a0023001416"); //nki-prod
     let datatypes = [new mongo.ObjectId("58c33bcee13a50849b25879a"), new mongo.ObjectId("58c33c5fe13a50849b25879b")];
-    col.find({project, datatype: {$in: datatypes}}).toArray((err, datasets)=>{
+    col.find({project, datatype: {$in: datatypes}, storage: "nki"}).toArray((err, datasets)=>{
         if(err) throw err;
         
         async.eachSeries(datasets, (dataset, next_dataset)=>{
@@ -40,8 +41,8 @@ mongo.MongoClient.connect(url, function(err, db) {
                 break;
             case "58c33c5fe13a50849b25879b": //dwi
                 files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.nii.gz", local: "dwi.nii.gz"});
-                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bval", local: "dwi.bval"});
-                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bvec", local: "dwi.bvec"});
+                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bval", local: "dwi.bvals"});
+                files.push({s3: base+"/dwi/sub-"+dataset.meta.subject+"_ses-"+dataset.meta.session+"_dwi.bvec", local: "dwi.bvecs"});
                 break;
             default:
                 console.error("wrong datatype", dataset.datatype);

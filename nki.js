@@ -148,7 +148,7 @@ fs.readdir(path, function(err, subjects) {
                                                         "subject": subject,
                                                         "session": session,
                                                         "task": task,
-                                                        "acq": acq,
+                                                        "acquisition": acq,
                                                     },
                                                     "tags" : [ session, task, acq ],
                                                     "datatype_tags" : [ task ], //should normalize?
