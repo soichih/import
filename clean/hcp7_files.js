@@ -13,7 +13,7 @@ mongo.MongoClient.connect(url, function(err, db) {
     //find datasets that we need to clean up
     var col = db.collection('datasets');
     //let project = new mongo.ObjectId("592dcc5b0188fd1eecf7b4ec"); //hcp-dev
-    let project = new mongo.ObjectId("5941a225f876b000210c11e5"); //hcp3t-prod
+    let project = new mongo.ObjectId("59a09bbab47c0c0027ad7046"); //hcp7t-prod
     let datatypes = [
         new mongo.ObjectId("58c33bcee13a50849b25879a"), //t1
         new mongo.ObjectId("58c33c5fe13a50849b25879b"), //dwi
@@ -29,14 +29,14 @@ mongo.MongoClient.connect(url, function(err, db) {
             switch(dataset.datatype.toString()) {
             case "58c33bcee13a50849b25879a": //t1
                 config = { files: [
-                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/T1w_acpc_dc_restore_1.25.nii.gz", local: "t1.nii.gz"},
+                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/T1w_acpc_dc_restore_1.05.nii.gz", local: "t1.nii.gz"},
                 ]};
                 break;
             case "58c33c5fe13a50849b25879b": //dwi
                 config = { files: [
-                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/Diffusion/bvecs", local: "dwi.bvecs"},
-                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/Diffusion/bvals", local: "dwi.bvals"},
-                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/Diffusion/data.nii.gz", local: "dwi.nii.gz"},
+                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/Diffusion_7T/bvecs", local: "dwi.bvecs"},
+                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/Diffusion_7T/bvals", local: "dwi.bvals"},
+                    {filepath: "/N/dcwan/projects/hcp/"+dataset.meta.subject+"/T1w/Diffusion_7T/data.nii.gz", local: "dwi.nii.gz"},
                 ]};
                 break;
             case "58cb22c8e13a50849b25882e": //freesurfer

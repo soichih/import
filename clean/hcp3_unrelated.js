@@ -11,7 +11,8 @@ mongo.MongoClient.connect(url, function(err, db) {
     if(err) throw err;
     console.log("connected to mongo");
 
-    let project = new mongo.ObjectId("592dcc5b0188fd1eecf7b4ec"); //hcp-dev
+    //let project = new mongo.ObjectId("592dcc5b0188fd1eecf7b4ec"); //hcp-dev
+    let project = new mongo.ObjectId("5941a225f876b000210c11e5"); //hcp3t-prod
 
     var list = fs.readFileSync("unrelated.txt", {encoding: "ascii"});
     var lines = list.split('\n');
