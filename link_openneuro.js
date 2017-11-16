@@ -14,8 +14,24 @@ fs.readdir(srcdir, (err, files)=>{
 
         var subject = subject_dir.substring(4);
         var srcpath = srcdir+"/"+subject_dir;
+        var freesurferpath = srcdir+"/derivatives/freesurfer/"+subject_dir;
 
         async.series([
+            next=>{
+                //find freesurfer
+                fs.stat(freesurferpath+"/mri", (err, stats)=>{
+                    if(err) return next(); 
+                    var dest = linkdir+"/"+subject;
+                    mkdirp(dest, err=>{
+                        if(err) return next(err);
+                        fs.symlink(freesurferpath, dest+"/freesurfer", err=>{
+                            console.log(subject,"freesurfur");         
+                        });
+                        next();
+                    });
+                });
+            },
+
             next=>{
                 //find dwi
                 fs.stat(srcpath+"/dwi", (err, stats)=>{
