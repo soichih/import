@@ -12,7 +12,7 @@ const datatype_dwi = mongo.ObjectId("58c33c5fe13a50849b25879b");
 const datatype_func = mongo.ObjectId("59b685a08e5d38b0b331ddc5"); 
 
 if(os.hostname() == "brain-life.org") {
-    var project = mongo.ObjectId(""); //production
+    var project = mongo.ObjectId("5a0d02f0326f36007cb5a54f"); //production
 } else {
     var project = mongo.ObjectId("5a0cf2e65f92bc5b569367c0"); //dev
 }
@@ -44,12 +44,13 @@ fs.readdir(path, function(err, subjects) {
                             "subject": subject,
                         },
                         "tags" : [ ],
-                        "datatype_tags" : [ ],
+                        "datatype_tags" : [ "defaced" ],
                         "status" : "stored",
                         "storage" : "openneuro",
                         "storage_config" : {
                             files: [
                                 {s3: s3base+"/anat/sub-"+subject+"_T1w.nii.gz", local: "t1.nii.gz"},
+                                {s3: s3base+"/anat/sub-"+subject+"_T1w.json", local: "t1.json"},
                             ] 
                         },
                         "removed": false,
@@ -82,6 +83,7 @@ fs.readdir(path, function(err, subjects) {
                                 {s3: s3base+"/dwi/sub-"+subject+"_dwi.nii.gz", local: "dwi.nii.gz"},
                                 {s3: s3base+"/dwi/sub-"+subject+"_dwi.bval", local: "dwi.bvals"},
                                 {s3: s3base+"/dwi/sub-"+subject+"_dwi.bvec", local: "dwi.bvecs"},
+                                {s3: s3base+"/dwi/sub-"+subject+"_dwi.json", local: "dwi.json"},
                             ] 
                         },
                         "removed": false,
