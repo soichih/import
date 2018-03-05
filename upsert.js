@@ -28,7 +28,17 @@ exports.upsert = function(project, datasets, cb) {
                         exist.datatype_tags.toString() == dataset.datatype_tags.toString()
                     ) found = true;
                 });
-                if(!found) new_datasets.push(dataset);
+                if(!found) new_datasets.push(Object.assign({
+                    //defaults
+                    project,
+                    user_id: "1",
+                    tags: [],
+                    datatype_tags: [],
+                    desc: dataset.storage_config.files[0].s3,
+                    status : "stored",
+                    removed: false,
+                    create_date: new Date(),
+                }, dataset));
             });
             console.log("found ",new_datasets.length,"new dataset");
             col.insertMany(new_datasets,function(err, result) {

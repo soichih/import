@@ -89,10 +89,6 @@ fs.readdir(path, function(err, subjects) {
                                 "status" : "stored",
                                 "storage" : "nki",
                                 "storage_config" : {
-                                    /*
-                                    "subject": subject,
-                                    "session": session,
-                                    */
                                     files: [
                                         {s3: base+"/dwi/sub-"+subject+"_ses-"+session+"_dwi.nii.gz", local: "dwi.nii.gz"},
                                         {s3: base+"/dwi/sub-"+subject+"_ses-"+session+"_dwi.bval", local: "dwi.bvals"},
