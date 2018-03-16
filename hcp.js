@@ -11,14 +11,16 @@ var datatype_dwi = mongo.ObjectId("58c33c5fe13a50849b25879b");
 var datatype_t1 = mongo.ObjectId("58c33bcee13a50849b25879a");
 var datatype_freesurfer = mongo.ObjectId("58cb22c8e13a50849b25882e"); 
 
-if(os.hostname() == "brain-life.org") {
-    var project = mongo.ObjectId("5941a225f876b000210c11e5"); //hcp project
+if(os.hostname() == "brainlife.io") {
+    var project = mongo.ObjectId(""); //hcp project
 } else {
-    var project = mongo.ObjectId("592dcc5b0188fd1eecf7b4ec"); //hcp project
+    var project = mongo.ObjectId("5aabf7b723f8fa0027301edf"); //hcp3t
 }
 
+//mount sshfs mount dcwan
+
 //reading directory
-var path = '/mnt/dcwan/projects/brainlife/hcp';
+var path = './hcp';
 fs.readdir(path, function(err, subjects) {
     if(err) throw err;
 
@@ -36,29 +38,26 @@ fs.readdir(path, function(err, subjects) {
         async.series([
             //t1
             next=>{
-                fs.stat(path+"/"+subject+"/t1", (err, stats)=>{
+		hcppath = subject+"/T1w/T1w_acpc_dc_restore_1.25.nii.gz";
+                fs.stat(path+"/"+hcppath, (err, stats)=>{
                     console.error(err);
                     if(err) return next(); //no t1 then skip
                     console.log("has t1");
                     datasets.push({
-                        "user_id" : "1",
-                        "project" : project,
                         "datatype" : datatype_t1,
-                        //"name" : "HCP t1 dataset",
-                        "desc" : "/T1w/T1w_acpc_dc_restore_1.25.nii.gz",
+                        "datatype_tags" : [ "acpc_aligned" ],
+                        //"desc" : hcppath,
                         "meta": {
                             "subject": subject,
                         },
-                        "tags" : [ 
-                            "hcp" 
-                        ],
-                        "datatype_tags" : [ "acpc_aligned" ],
+                        "tags" : [ "hcp" ],
                         "storage" : "dcwan/hcp",
                         "storage_config" : {
-                            "subdir": subject+"/t1",
+                            //"subdir": subject+"/t1",
+			    files: [
+				{filepath: "/N/dcwan/projects/hcp/"+hcppath, local: "t1.nii.gz"}
+			    ],
                         },
-                        "removed": false,
-                        "create_date": stats.ctime,
                     });
 
                     next();
@@ -67,87 +66,84 @@ fs.readdir(path, function(err, subjects) {
 
             //dwi(3t)
             next=>{
-                fs.stat(path+"/"+subject+"/dwi", (err, stats)=>{
+		hcppath = subject+"/T1w/Diffusion";
+                fs.stat(path+"/"+hcppath, (err, stats)=>{
                     if(err) return next(); //no dwi then skip
                     console.log("has dwi(3t)");
                     datasets.push({
-                        "user_id" : "1",
-                        "project" : project,
                         "datatype" : datatype_dwi,
-                        //"name" : "HCP dwi dataset",
-                        "desc" : "/T1w/Diffusion/data.nii.gz (with bvecs/bvals)",
+                        //"datatype_tags" : [],
+                        //"desc" : "/T1w/Diffusion/data.nii.gz (with bvecs/bvals)",
                         "meta": {
                             "subject": subject,
                         },
                         "tags" : [ 
                             "hcp" , "3t"
                         ],
-                        "datatype_tags" : [],
                         "storage" : "dcwan/hcp",
                         "storage_config" : {
-                            "subdir": subject+"/dwi",
+                            //"subdir": subject+"/dwi",
+			    files: [
+				{ filepath: "/N/dcwan/projects/hcp/"+hcppath+"/bvecs", local: "dwi.bvecs" },
+				{ filepath: "/N/dcwan/projects/hcp/"+hcppath+"/bvals", local: "dwi.bvals" },
+				{ filepath: "/N/dcwan/projects/hcp/"+hcppath+"/data.nii.gz", local: "dwi.nii.gz" },
+			    ],
                         },
-                        "removed": false,
-                        "create_date": stats.ctime,
                     });
                     next();
                 });
             },
             
+	/*
             //dwi(7t)
             next=>{
-                fs.stat(path+"/"+subject+"/dwi7t", (err, stats)=>{
+		hcppath = subject+"/T1w/Diffusion_7T";
+                fs.stat(path+"/"+hcppath, (err, stats)=>{
                     if(err) return next(); //no dwi then skip
                     console.log("has 7t data!", path+"/"+subject+"/dwi7t");
                     datasets.push({
-                        "user_id" : "1",
-                        "project" : project,
                         "datatype" : datatype_dwi,
                         //"name" : "HCP dwi(7t) dataset",
-                        "desc" : "/T1w/Diffusion_7T/data.nii.gz (with bvecs/bvals)",
+                        //"desc" : "/T1w/Diffusion_7T/data.nii.gz (with bvecs/bvals)",
                         "meta": {
                             "subject": subject,
                         },
-                        "tags" : [ 
-                            "hcp" , "7t"
-                        ],
+                        "tags" : [ "hcp" , "7t" ],
                         "datatype_tags" : ["7t"],
                         "storage" : "dcwan/hcp",
                         "storage_config" : {
-                            "subdir": subject+"/dwi7t",
+			    files: [
+				{ filepath: "/N/dcwan/projects/hcp/"+hcppath+"/bvecs", local: "dwi.bvecs" },
+				{ filepath: "/N/dcwan/projects/hcp/"+hcppath+"/bvals", local: "dwi.bvals" },
+				{ filepath: "/N/dcwan/projects/hcp/"+hcppath+"/data.nii.gz", local: "dwi.nii.gz" },
+			    ],
                         },
-                        "removed": false,
-                        "create_date": stats.ctime,
                     });
                     console.dir(datasets);
                     next();
                 });
             },
+	*/
             
             //freesurfer
             next=>{
-                fs.stat(path+"/"+subject+"/freesurfer", (err, stats)=>{
+		hcppath = subject+"/T1w/"+subject;
+                fs.stat(path+"/"+hcppath, (err, stats)=>{
                     if(err) return next(); //no dwi then skip
                     console.log("has freesurfer");
                     datasets.push({
-                        "user_id" : "1",
-                        "project" : project,
                         "datatype" : datatype_freesurfer,
                         //"name" : "HCP freesurfer output",
-                        "desc" : "HCP freesurfer output from HCP Pipeline",
+                        "desc" : "/T1w/"+subject+" (t1 aligned)",
                         "meta": {
                             "subject": subject,
                         },
-                        "tags" : [ 
-                            "hcp" 
-                        ],
-                        "datatype_tags" : [],
+                        "tags" : [ "hcp" ],
+                        //"datatype_tags" : [],
                         "storage" : "dcwan/hcp",
                         "storage_config" : {
-                            "subdir": subject+"/freesurfer",
+			    dirpath: "/N/dcwan/projects/hcp/"+hcppath, local: "output",
                         },
-                        "removed": false,
-                        "create_date": stats.ctime,
                     });
                     next();
                 });
@@ -157,7 +153,8 @@ fs.readdir(path, function(err, subjects) {
             next_subject();
         });
 
-    }, function(err) {
+    }, err=> {
+	//console.dir(datasets);
         upsert.upsert(project, datasets, err=>{
             console.log("all done");
         });
