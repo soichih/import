@@ -12,6 +12,8 @@
     "async": "^2.4.1",
     "mkdirp": "^0.5.1",
     "mongodb": "^2.2.30",
+    "pkgcloud": "^1.5.0",
+    "stream-meter": "^1.0.4",
     "xml-parser": "^1.2.1"
   }
 }
