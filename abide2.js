@@ -11,6 +11,8 @@ let datasets = [];
 
 if(os.hostname() == "brainlife.io") {
     var project = mongo.ObjectId(""); //prod
+} else if(os.hostname() == "test.brainlife.io") {
+    var project = mongo.ObjectId("5aa00ba8f5e2b30049a8597a"); 
 } else {
     var project = mongo.ObjectId("5a9b626489426e42cf725795"); //abide2 project
 }

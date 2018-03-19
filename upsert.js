@@ -21,6 +21,7 @@ exports.upsert = function(project, datasets, cb) {
             datasets.forEach(dataset=>{
                 var found = false;
                 exists.forEach(exist=>{
+		    if(!dataset.datatype_tags) dataset.datatype_tags = [];
                     if(
                         exist.meta.subject == dataset.meta.subject &&
                         exist.meta.session == dataset.meta.session &&
@@ -34,7 +35,7 @@ exports.upsert = function(project, datasets, cb) {
                     user_id: "1",
                     tags: [],
                     datatype_tags: [],
-                    desc: dataset.storage_config.files[0].s3,
+                    desc: dataset.desc || dataset.storage_config.files[0].s3,
                     status : "stored",
                     removed: false,
                     create_date: new Date(),
