@@ -14,46 +14,93 @@ const datatype_func = mongo.ObjectId("59b685a08e5d38b0b331ddc5");
 if(os.hostname() == "brain-life.org") {
     var project = mongo.ObjectId("5a0d02f0326f36007cb5a54f"); //production
 } else {
-    var project = mongo.ObjectId("5a0cf2e65f92bc5b569367c0"); //dev
+    var project = mongo.ObjectId("5ac94ebbfd018278d6932159"); //dev 000009
+    //var project = mongo.ObjectId("5a0cf2e65f92bc5b569367c0"); //dev 000030
 }
 
-const s3_root = "ds000030/ds000030_R1.0.4/uncompressed";
-const path = '/link/openneuro/30r4';
+//TODO
+//load following datasets that has dwi data
+//ds0000009
+//ds0000030 (ross is working on access issue)
+//ds0000031
+//ds0000051
+//ds0000107
+//ds0000114
+//ds0000117
+//ds0000221
+//ds0000244
+
+const s3_root = "ds000009/ds000009_R2.0.3/uncompressed";
+const path = '/mnt/openneuro/ds000009/ds000009_R2.0.3/uncompressed';
+//const s3_root = "ds000030/ds000030_R1.0.5/uncompressed";
+//const path = '/mnt/openneuro/ds000030/ds000030_R1.0.5/uncompressed';
+
+//load t1w/dwi
+let t1wjson = {}; 
+try {
+    if(fs.statSync(path+"/T1w.json")) t1wjson = require(path+"/T1w.json");
+} catch(err) {
+    console.log("no t1w.json", err);
+}
+let dwijson = {}; 
+try {
+    if(fs.statSync(path+"/dwi.json")) dwijson = require(path+"/dwi.json");
+} catch(err) {
+    console.log("no dwi.json", err);
+}
+
+//load all func json
+const bold_jsons = {};
+const files = fs.readdirSync(path);
+files.forEach(file=>{
+    if(~file.indexOf("_bold.json")) {
+        //task-balloonanalogrisktask_bold.json
+        let tokens = file.split("_");
+        let task = tokens[0].split("-")[1];
+        bold_jsons[task] = require(path+"/"+file);
+    }
+});
 
 fs.readdir(path, function(err, subjects) {
     if(err) throw err;
     let datasets = [];
     console.log("number of subjects", subjects.length);
     async.eachSeries(subjects, (subject, next_subject)=>{
+        if(!~subject.indexOf("sub-")) return next_subject();
+
+        let s_subject = subject.substring(4);
+
         console.log("subject:", subject);
-        let s3base = s3_root+"/sub-"+subject;
-        
+        let s3base = s3_root+"/"+subject;
+
         //handle each data types
         async.series([
             next=>{
-                console.log("...anat");
-                fs.stat(path+"/"+subject+"/anat/t1.nii.gz", (err, stats)=>{
+                fs.stat(path+"/"+subject+"/anat/"+subject+"_T1w.nii.gz", (err, stats)=>{
                     if(err) return next(); //no t1 then skip
-                    console.log(path+"/"+subject+"/anat/t1.nii.gz");
+                    console.log(path+"/"+subject+"/anat/");
+                    let t1wjson_local = {};
+                    try {
+                        let fullpath = path+"/"+subject+"/anat/"+subject+"_T1w.json";
+                        if(fs.statSync(fullpath)) t1wjson_local = require(fullpath);
+                    } catch(err) {
+                        console.log("no local t1w.json");
+                    }
+                    //console.dir(stats);
                     datasets.push({
-                        "user_id" : "1",
-                        "project" : project,
                         "datatype" : datatype_t1,
-                        "desc" : "",
-                        "meta": {
-                            "subject": subject,
-                        },
-                        "tags" : [ ],
-                        "datatype_tags" : [ "defaced" ],
-                        "status" : "stored",
+                        //"desc" : "",
+                        "meta": Object.assign({}, t1wjson, t1wjson_local, {
+                            "subject": s_subject,
+                        }),
+                        //"tags" : [ ],
+                        //"datatype_tags" : [ "defaced" ],
                         "storage" : "openneuro",
                         "storage_config" : {
                             files: [
-                                {s3: s3base+"/anat/sub-"+subject+"_T1w.nii.gz", local: "t1.nii.gz"},
-                                {s3: s3base+"/anat/sub-"+subject+"_T1w.json", local: "t1.json"},
+                                {s3: s3base+"/anat/"+subject+"_T1w.nii.gz", local: "t1.nii.gz"},
                             ] 
                         },
-                        "removed": false,
                         "create_date": stats.ctime,
                     });
 
@@ -62,31 +109,26 @@ fs.readdir(path, function(err, subjects) {
             },
             
             next=>{
-                console.log("...dwi");
-                fs.stat(path+"/"+subject+"/dwi/dwi.nii.gz", (err, stats)=>{
+                fs.stat(path+"/"+subject+"/dwi/"+subject+"_dwi.nii.gz", (err, stats)=>{
                     if(err) return next(); 
-                    console.log(path+"/"+subject+"/dwi/dwi.nii.gz");
+                    console.log(path+"/"+subject+"/dwi");
+                    let dwijson_local = require(path+"/"+subject+"/dwi/"+subject+"_dwi.json");
                     datasets.push({
-                        "user_id" : "1",
-                        "project" : project,
                         "datatype" : datatype_dwi,
-                        "desc" : "",
-                        "meta": {
-                            "subject": subject,
-                        },
-                        "tags" : [ ],
-                        "datatype_tags" : [ ],
-                        "status" : "stored",
+                        //"desc" : "",
+                        "meta": Object.assign({}, dwijson, dwijson_local, {
+                            "subject": s_subject,
+                        }),
+                        //"tags" : [ ],
+                        //"datatype_tags" : [ ],
                         "storage" : "openneuro",
                         "storage_config" : {
                             files: [
-                                {s3: s3base+"/dwi/sub-"+subject+"_dwi.nii.gz", local: "dwi.nii.gz"},
-                                {s3: s3base+"/dwi/sub-"+subject+"_dwi.bval", local: "dwi.bvals"},
-                                {s3: s3base+"/dwi/sub-"+subject+"_dwi.bvec", local: "dwi.bvecs"},
-                                {s3: s3base+"/dwi/sub-"+subject+"_dwi.json", local: "dwi.json"},
+                                {s3: s3base+"/dwi/"+subject+"_dwi.nii.gz", local: "dwi.nii.gz"},
+                                {s3: s3base+"/dwi/"+subject+"_dwi.bval", local: "dwi.bvals"},
+                                {s3: s3base+"/dwi/"+subject+"_dwi.bvec", local: "dwi.bvecs"},
                             ] 
                         },
-                        "removed": false,
                         "create_date": stats.ctime,
                     });
 
@@ -95,58 +137,68 @@ fs.readdir(path, function(err, subjects) {
             },
 
             next=>{
-                console.log("...func");
-
                 let funcpath = path+"/"+subject+"/func";
-                fs.readdir(funcpath, (err, tasks)=>{
+                fs.readdir(funcpath, (err, files)=>{
                     if(err) return next();
-                    async.eachSeries(tasks, (task, next_task)=>{
-
+                    //func has a lot of different tasks.
+                    async.eachSeries(files, (file, next_file)=>{
+                        if(!~file.indexOf("_bold.nii.gz")) return next_file(); //not bold
+                        console.log(funcpath+"/"+file);
                         //find time from bold.nii.gz
-                        fs.stat(funcpath+"/"+task+"/bold.nii.gz", (err, stats)=>{
-                            if(err) return next_task(); 
-                            console.log(funcpath+"/"+task+"/bold.nii.gz");
+                        fs.stat(funcpath+"/"+file, (err, stats)=>{
+                            if(err) return next_file(); 
 
-                            //find all files 
-                            fs.readdir(funcpath+"/"+task, (err, _files)=>{
-                                if(err) return next_task(); 
-                                let files = _files.map(file=>{
-                                    return {
-                                        s3: s3base+"/func/sub-"+subject+"_task-"+task+"_"+file,
-                                        local: file
-                                    }
-                                });
+                            //parse task file name - sub-20 _ task-emotionalregulation _ run-01 _ bold.nii.gz
+                            let tokens = file.split("_");
+                            let task = tokens[1].split("-")[1];
+                            let run = null;
+                            if(tokens.length == 4) {
+                                run = tokens[2].split("-")[1];
+                            }
+                            //console.log(task, run);
+
+                            //load bold.json
+                            let file_prefix = file.substring(0, file.length-11);
+                            let json_local = require(funcpath+"/"+file_prefix+"bold.json");
+                            let files = [
+                                {s3: s3base+"/func/"+file_prefix+"bold.nii.gz", local: "bold.nii.gz"},
+                            ];
+
+                            //rest doesn't have event sometimes?
+                            fs.stat(funcpath+"/"+file_prefix+"events.tsv", (err, events_stats)=>{
+                                if(!err) {
+                                    files.push({s3: s3base+"/func/"+file_prefix+"events.tsv", local: "events.tsv"});
+                                }
+                                let tags = [ task ];
+                                if(run) tags.push("run-"+run);
                                 datasets.push({
-                                    "user_id" : "1",
-                                    "project" : project,
                                     "datatype" : datatype_func,
-                                    "desc" : "",
-                                    "meta": {
-                                        "subject": subject,
+                                    "meta": Object.assign({}, bold_jsons[task], json_local, {
+                                        "subject": s_subject,
                                         "task": task,
-                                    },
-                                    "tags" : [ task ],
+                                        "run": run,
+                                    }),
+                                    tags,
                                     "datatype_tags" : [ task ], //should normalize?
-                                    "status" : "stored",
                                     "storage" : "openneuro",
                                     "storage_config" : {
-                                       files
+                                        files,
                                     },
-                                    "removed": false,
                                     "create_date": stats.ctime,
                                 });
-                                next_task();
-                            })
+                                next_file();
+                            });
                         });
 
                     }, next);
                 });
             },
-
         ], next_subject);
     }, err=>{
         console.log("inserting...........");
-        //console.dir(datasets);
+        datasets.forEach(dataset=>{
+            console.log(JSON.stringify(dataset, null, 4));
+        });
         upsert.upsert(project, datasets, err=>{
             console.log("all done");
         });
