@@ -17,9 +17,7 @@ if(os.hostname() == "brainlife.io") {
 } else if(os.hostname() == "test.brainlife.io") {
     var project = mongo.ObjectId(""); 
 } else {
-    var project = mongo.ObjectId("5acbf95ffd018278d693215b"); //dev 000031
-    //var project = mongo.ObjectId("5ac94ebbfd018278d6932159"); //dev 000009
-    //var project = mongo.ObjectId("5a0cf2e65f92bc5b569367c0"); //dev 000030
+    var project = mongo.ObjectId("5acc078bfd018278d693215c"); //dev 000031
 }
 
 //TODO
@@ -36,8 +34,10 @@ if(os.hostname() == "brainlife.io") {
 //const path = '/mnt/openneuro/ds000009/ds000009_R2.0.3/uncompressed';
 //const s3_root = "ds000030/ds000030_R1.0.5/uncompressed";
 //const path = '/mnt/openneuro/ds000030/ds000030_R1.0.5/uncompressed';
-const s3_root = "ds000201/ds000201_R1.0.5/uncompressed";
-const path = '/mnt/openneuro/ds000201/ds000201_R1.0.5/uncompressed';
+//const s3_root = "ds000201/ds000201_R1.0.5/uncompressed";
+//const path = '/mnt/openneuro/ds000201/ds000201_R1.0.5/uncompressed';
+const s3_root = "ds000051/ds000051_R2.0.2/uncompressed";
+const path = '/mnt/openneuro/ds000051/ds000051_R2.0.2/uncompressed';
 
 //load t1w/dwi
 let t1wjson = {}; 
@@ -140,7 +140,7 @@ function handle_modality(subject_path, subject, session, cb) {
                                 "desc" : t1wjson_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
-                                    "session": session.substring(4),
+                                    "session": session?session.substring(4):null,
                                     "run": file_comp.run,
                                 }, t1wjson, t1wjson_local),
                                 tags,
@@ -170,7 +170,7 @@ function handle_modality(subject_path, subject, session, cb) {
                                 "desc" : t2wjson_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
-                                    "session": session.substring(4),
+                                    "session": session?session.substring(4):null,
                                     "run": file_comp.run,
                                 }, t2wjson, t2wjson_local),
                                 tags,
@@ -218,7 +218,7 @@ function handle_modality(subject_path, subject, session, cb) {
                                 "desc" : dwijson_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
-                                    "session": session.substring(4),
+                                    "session": session?session.substring(4):null,
                                     "run": file_comp.run,
                                 }, dwijson, dwijson_local),
                                 tags,
@@ -279,13 +279,31 @@ function handle_modality(subject_path, subject, session, cb) {
                                 console.log("no events.tsv");
                             }
                             
-                            //sbref.nii.gz
+                            //sbref.nii.gz (optional)
                             try {
                                 if(fs.statSync(subject_path+"/func/"+filebase+"_sbref.nii.gz")) {
                                     files.push({s3: s3base+"/func/"+filebase+"_sbref.nii.gz", local: "sbref.nii.gz"});
                                 }
                             } catch(err) {
                                 console.log("no sbref.nii.gz");
+                            }
+                            
+                            //physio.json (optional)
+                            try {
+                                if(fs.statSync(subject_path+"/func/"+filebase+"_physio.json")) {
+                                    files.push({s3: s3base+"/func/"+filebase+"_physio.json", local: "physio.json"});
+                                }
+                            } catch(err) {
+                                console.log("no physio.json");
+                            }
+                            
+                            //physio.tsv.gz(optional)
+                            try {
+                                if(fs.statSync(subject_path+"/func/"+filebase+"_physio.tsv.gz")) {
+                                    files.push({s3: s3base+"/func/"+filebase+"_physio.tsv.gz", local: "physio.tsv.gz"});
+                                }
+                            } catch(err) {
+                                console.log("no physio.tsv.gz");
                             }
 
                             //now create dataset records
@@ -294,7 +312,7 @@ function handle_modality(subject_path, subject, session, cb) {
                                 "desc" : json_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
-                                    "session": session.substring(4),
+                                    "session": session?session.substring(4):null,
                                     "task": file_comp.task,
                                     "run": file_comp.run,
                                 }, bold_jsons[file_comp.task], json_local),
