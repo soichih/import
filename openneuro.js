@@ -17,29 +17,27 @@ if(os.hostname() == "brainlife.io") {
 } else if(os.hostname() == "test.brainlife.io") {
     var project = mongo.ObjectId(""); 
 } else {
-    var project = mongo.ObjectId("5aca13defd018278d693215a"); //dev 000031
+    var project = mongo.ObjectId("5acbf95ffd018278d693215b"); //dev 000031
     //var project = mongo.ObjectId("5ac94ebbfd018278d6932159"); //dev 000009
     //var project = mongo.ObjectId("5a0cf2e65f92bc5b569367c0"); //dev 000030
 }
 
 //TODO
 //load following datasets that has dwi data
-//ds0000009
-//ds0000030 (ross is working on access issue)
-//ds0000031
 //ds0000051
 //ds0000107
 //ds0000114
 //ds0000117
 //ds0000221
+//ds0000201
 //ds0000244
 
 //const s3_root = "ds000009/ds000009_R2.0.3/uncompressed";
 //const path = '/mnt/openneuro/ds000009/ds000009_R2.0.3/uncompressed';
 //const s3_root = "ds000030/ds000030_R1.0.5/uncompressed";
 //const path = '/mnt/openneuro/ds000030/ds000030_R1.0.5/uncompressed';
-const s3_root = "ds000031/ds000031_R1.0.4/uncompressed";
-const path = '/mnt/openneuro/ds000031/ds000031_R1.0.4/uncompressed';
+const s3_root = "ds000201/ds000201_R1.0.5/uncompressed";
+const path = '/mnt/openneuro/ds000201/ds000201_R1.0.5/uncompressed';
 
 //load t1w/dwi
 let t1wjson = {}; 
@@ -84,6 +82,8 @@ function handle_modality(subject_path, subject, session, cb) {
     fs.readdir(subject_path, (err, modes)=>{
         if(err) return cb(err);
         async.eachSeries(modes, (mode, next_mode)=>{
+
+            if(!~["dwi", "func", "anat"].indexOf(mode)) return next_mode();
 
             //scan for all files
             fs.readdir(subject_path+"/"+mode, (err, files)=>{
@@ -137,7 +137,7 @@ function handle_modality(subject_path, subject, session, cb) {
 
                             datasets.push({
                                 "datatype" : datatype_t1,
-                                //"desc" : "",
+                                "desc" : t1wjson_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
                                     "session": session.substring(4),
@@ -167,7 +167,7 @@ function handle_modality(subject_path, subject, session, cb) {
 
                             datasets.push({
                                 "datatype" : datatype_t2,
-                                //"desc" : "",
+                                "desc" : t2wjson_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
                                     "session": session.substring(4),
@@ -215,7 +215,7 @@ function handle_modality(subject_path, subject, session, cb) {
                             let dwijson_local = require(subject_path+"/dwi/"+filebase+"_dwi.json"); //should always have this?
                             datasets.push({
                                 "datatype" : datatype_dwi,
-                                //"desc" : "",
+                                "desc" : dwijson_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
                                     "session": session.substring(4),
@@ -291,6 +291,7 @@ function handle_modality(subject_path, subject, session, cb) {
                             //now create dataset records
                             datasets.push({
                                 "datatype" : datatype_func,
+                                "desc" : json_local.SeriesDescription, 
                                 "meta": Object.assign({
                                     "subject": subject.substring(4),
                                     "session": session.substring(4),
@@ -323,13 +324,14 @@ fs.readdir(path, function(err, subjects) {
     if(err) throw err;
     console.log("number of subjects", subjects.length);
     async.eachSeries(subjects, (subject, next_subject)=>{
-        if(!~subject.indexOf("sub-")) return next_subject();
+        if(subject.indexOf("sub-") !== 0) return next_subject();
+        console.log(subject);
         
         //handle sessions if there are any
         fs.readdir(path+"/"+subject, (err, files)=>{
-            if(err) return next();
+            if(err) return next_subject(err);
             async.eachSeries(files, (file, next_file)=>{
-                if(file.indexOf("ses-") == 0) {
+                if(file.indexOf("ses-") === 0) {
                     let session = file;
                     handle_modality(path+"/"+subject+"/"+session, subject, session, next_file);
                 } else next_file();
@@ -338,9 +340,8 @@ fs.readdir(path, function(err, subjects) {
                 handle_modality(path+"/"+subject, subject, null, next_subject);
             });
         });
-
-
     }, err=>{
+        if(err) throw err;
         console.log("inserting...........");
 
         //dump few things
